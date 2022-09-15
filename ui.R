@@ -29,7 +29,10 @@ shinyUI(fluidPage(
         'valores medidos in situ, y otra columna "e", con valores',
         'estimados por el modelo (siempre hablando de Clorofila-a)'
       ),
-      tags$a("Enlace: archivo CSV de ejemplo", href = 'ejemplo.csv')
+      tags$h4("Enlaces:"),
+      tags$a("Archivo CSV de ejemplo", href = 'ejemplo.csv'),
+      tags$br(),
+      tags$a("Documentación de las métricas", href = 'metricas.pdf')
     ),
 
     mainPanel(
