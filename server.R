@@ -9,6 +9,8 @@
 
 library(shiny)
 
+source("R/funciones.R", local = TRUE, encoding = "UTF-8")
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 

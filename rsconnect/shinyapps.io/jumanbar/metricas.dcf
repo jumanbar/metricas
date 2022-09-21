@@ -5,9 +5,9 @@ account: jumanbar
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7025744
-bundleId: 6306320
+bundleId: 6321727
 url: https://jumanbar.shinyapps.io/metricas/
-when: 1663267555.42552
-lastSyncTime: 1663267555.42553
+when: 1663713974.11991
+lastSyncTime: 1663713974.11991
 asMultiple: FALSE
 asStatic: FALSE
