@@ -38,5 +38,5 @@ shinyServer(function(input, output) {
         g_em(d(), alpha = .7)
     })
 
-}
+})
 
