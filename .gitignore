@@ -40,3 +40,4 @@ vignettes/*.pdf
 .Renviron
 
 tmp*
+signal-desktop-keyring.gpg
