@@ -38,3 +38,9 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+
+signal-desktop-keyring.gpg
+
+
+rsconnect/*
