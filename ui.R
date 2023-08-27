@@ -1,6 +1,10 @@
+
 library(shiny)
 
-shinyUI(
+shinyUI(fluidPage(
+  # Application title
+  titlePanel("Cálculo de métricas"),
+
   sidebarLayout(
     sidebarPanel(
       width = 3,
@@ -44,6 +48,7 @@ shinyUI(
                ),
         column(width = 4, DT::DTOutput('metricas_out'))
         )
-      )
-    )
-)
+      ),
+
+  )
+))
