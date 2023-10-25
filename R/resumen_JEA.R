@@ -13,12 +13,12 @@ dcloa <- read_delim(
   select(
     calib = `1CALI/2VALI`,
     in_situ = `CLOROFILA IN SITU`,
-    drozd = `CLOROFILA (DRODZ)`,
-    mishra = `CLOROFILA (MISHRA)`,
-    rn = `CLOROFILA (RN)`,
-    mdn = `CLOROFILA (MDN)`
+    Drozd = `CLOROFILA (DRODZ)`,
+    Mishra = `CLOROFILA (MISHRA)`,
+    RN = `CLOROFILA (RN)`,
+    MDN = `CLOROFILA (MDN)`
   ) %>%
-  pivot_longer(drozd:mdn)
+  pivot_longer(Drozd:MDN)
 
 ## turb ----
 dturb <- read_delim(
@@ -30,13 +30,13 @@ dturb <- read_delim(
   select(
     calib = `1CALI/2VALI`,
     in_situ = `TURBIDEZ IN SITU`,
-    zhan = `TURBIDEZ (ZHAN)`,
-    delegido = `TURBIDEZ (DELEGIDO)`,
-    maciel.v1 = `TURBIDEZ (MACIEL B6)`,
-    maciel.v2 = `TURBIDEZ (MACIEL B8A)`,
-    rn = `TURBIDEZ (RN)`
+    Zhan = `TURBIDEZ (ZHAN)`,
+    Delegido = `TURBIDEZ (DELEGIDO)`,
+    Maciel.v1 = `TURBIDEZ (MACIEL B6)`,
+    Maciel.v2 = `TURBIDEZ (MACIEL B8A)`,
+    RN = `TURBIDEZ (RN)`
   ) %>%
-  pivot_longer(zhan:rn)
+  pivot_longer(Zhan:RN)
 
 ## cdom ----
 dcdom <- read_delim(
@@ -48,12 +48,12 @@ dcdom <- read_delim(
   select(
     # calib = `1CALI/2VALI`,
     in_situ = `CDOM IN SITU`,
-    ficek = `CDOM (FICEK)`,
-    chen.v1 = `CDOM (CHEN v1)`,
-    chen.v2 = `CDOM (CHEN v2)`,
-    rn = `CDOM (RN)`
+    Ficek = `CDOM (FICEK)`,
+    Chen.v1 = `CDOM (CHEN v1)`,
+    Chen.v2 = `CDOM (CHEN v2)`,
+    RN = `CDOM (RN)`
   ) %>%
-  pivot_longer(ficek:rn)
+  pivot_longer(Ficek:RN)
 
 # SCATTERPLOTS --------
 
@@ -68,8 +68,12 @@ dcloa %>%
   facet_wrap(vars(name)) +
   coord_fixed() +
   geom_point(alpha = .5) +
-  xlab('Clorofila-a (IN SITU)') +
-  ylab('ESTIMACIÓN')
+  xlab("Medido") +
+  ggtitle("Clorofila-a (ug/l)") +
+  ylab("Estimado") +
+  theme_bw()
+
+ggsave(filename = "cloa.png", width = 110, height = 110, units = "mm")
 
 ## turb -----
 rng_turb <- range(c(range(dturb$in_situ), range(dturb$value)))
@@ -83,12 +87,17 @@ dturb %>%
   facet_wrap(vars(name)) +
   coord_fixed() +
   geom_point(alpha = .5) +
-  xlab('Turbidez (IN SITU)') +
-  ylab('ESTIMACIÓN')
+  xlab("Medido") +
+  ylab("Estimado") +
+  ggtitle("Turbidez (NTU)") +
+  theme_bw()
+
+ggsave(filename = "turb.png", width = 110 * 4 / 3, height = 110, units = "mm")
 
 ## cdom ----
 rng_cdom <- range(c(range(dcdom$in_situ), range(dcdom$value)))
 dcdom %>%
+  # filter(calib == 2) %>%
   ggplot() +
   aes(in_situ, value) +
   scale_y_continuous(limits = rng_cdom) +
@@ -97,9 +106,14 @@ dcdom %>%
   facet_wrap(vars(name)) +
   coord_fixed() +
   geom_point(alpha = .5) +
-  xlab('CDOM (IN SITU)') +
-  ylab('ESTIMACIÓN')
+  xlab("Medido") +
+  ylab("Estimado") +
+  ggtitle("CDOM (m-1)") +
+  theme_bw()
 
+ggsave(filename = "cdom.png", width = 110, height = 110, units = "mm")
+
+# METRICAS -------
 
 cloa <- read_delim("datos/comparativo_cloa.csv",
                    delim = "\t", escape_double = FALSE,
@@ -154,11 +168,62 @@ cloa$metricas
 
 selmet <- c('n', 'min', 'mean', 'median', 'max', 'MSA',
             'Epsilon', 'Beta', 'Int.TheilSen', 'Slope.TheilSen')
-cloa %>% filter(metricas %in% selmet) # En todas mejor rn
-turb %>% filter(metricas %in% selmet) # En todas mejor rn
-cdomv %>% filter(metricas %in% selmet) # En todas mejor rn
+cloa %>% filter(metricas %in% selmet) # En todas mejor RN
+turb %>% filter(metricas %in% selmet) # En todas mejor RN
+cdomv %>% filter(metricas %in% selmet) # En todas mejor RN
 cdomt %>% filter(metricas %in% selmet) #
 
 
+names(cloa)[2:5] <- c("Mishra", "MDN", "Drozd", "RN")
+names(turb)[2:6] <- c("Zhan", "Delegido", "Maciel.v1", "Maciel.v2", "RN")
+names(cdomv)[2:5] <- c("Ficek", "Chen.v1", "Chen.v2", "RN")
+names(cdomt)[2:5] <- c("Ficek", "Chen.v1", "Chen.v2", "RN")
 
+niveles <- c("Slope.TheilSen", "Int.TheilSen", "Beta", "Epsilon", "MSA")
+breaks  <- c("RN", "[alt]", "Valor óptimo")
 
+plot_metricas <- function(.data, breaks, niveles) {
+  d <- .data %>%
+    filter(metricas %in% selmet[-1:-5]) %>%
+    mutate(metricas = factor(metricas, levels = niveles),
+           optimo = if_else(metricas == "Slope.TheilSen", 1, 0)) %>%
+    pivot_longer(-c(metricas, optimo, RN))
+
+  p <- d %>% ggplot() + aes(metricas, RN) +
+    facet_wrap(vars(name)) +
+    theme_minimal() +
+    geom_segment(aes(x = metricas, xend = metricas, y = RN, yend = value),
+                 color = "grey") +
+    geom_point(aes(y = RN, color = breaks[1], size = breaks[1]), alpha = .8) +
+    geom_point(aes(y = value, color = breaks[2], size = breaks[2]), alpha = .8) +
+    geom_point(aes(y = optimo, color = breaks[3], size = breaks[3])) +
+    coord_flip() +
+    ylab("") +
+    xlab("") +
+    theme(
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_blank(),
+      axis.text = element_text(size = 10),
+      strip.text = element_text(size = 14),
+      legend.position = "bottom"
+    ) +
+    scale_color_manual("",
+                       breaks = breaks,
+                       values = c("#69b3a2", "grey", "black")) +
+    scale_size_manual("",
+                      breaks = breaks,
+                      values = c(5, 3, .5))
+  print(p)
+}
+
+plot_metricas(cloa, breaks, niveles)
+ggsave(filename = "cloa_vs.png", width = 140, height = 80, units = "mm")
+
+plot_metricas(turb, breaks, niveles)
+ggsave(filename = "turb_vs.png", width = 140, height = 140, units = "mm")
+
+plot_metricas(cdomv, breaks, niveles)
+ggsave(filename = "cdomv_vs.png", width = 140, height = 80, units = "mm")
+
+plot_metricas(cdomt, breaks, niveles)
+ggsave(filename = "cdomt_vs.png", width = 140, height = 80, units = "mm")
